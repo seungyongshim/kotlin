@@ -708,9 +708,9 @@ task copySamples(type: CopySamples) {
 }
 
 task uploadBundle {
-    dependsOn ':bundle'
+    dependsOn ':kotlin-native:bundle'
     if (isMac()) {
-        dependsOn ':bundleRestricted'
+        dependsOn ':kotlin-native:bundleRestricted'
     }
     doLast {
         def kind = (konanVersionFull.meta == MetaVersion.DEV) ? "dev" : "releases"
