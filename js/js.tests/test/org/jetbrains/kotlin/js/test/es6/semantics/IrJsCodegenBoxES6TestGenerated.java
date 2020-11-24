@@ -17644,6 +17644,11 @@ public class IrJsCodegenBoxES6TestGenerated extends AbstractIrJsCodegenBoxES6Tes
             runTest("compiler/testData/codegen/box/properties/kt9603.kt");
         }
 
+        @TestMetadata("lazyInitializationMultiModule.kt")
+        public void testLazyInitializationMultiModule() throws Exception {
+            runTest("compiler/testData/codegen/box/properties/lazyInitializationMultiModule.kt");
+        }
+
         @TestMetadata("primitiveOverrideDefaultAccessor.kt")
         public void testPrimitiveOverrideDefaultAccessor() throws Exception {
             runTest("compiler/testData/codegen/box/properties/primitiveOverrideDefaultAccessor.kt");
