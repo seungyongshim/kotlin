@@ -7,8 +7,6 @@ package org.jetbrains.kotlin.fir.analysis.checkers.extended
 
 import org.jetbrains.kotlin.KtNodeTypes
 import org.jetbrains.kotlin.fir.FirFakeSourceElementKind
-import org.jetbrains.kotlin.fir.FirLightSourceElement
-import org.jetbrains.kotlin.fir.FirPsiSourceElement
 import org.jetbrains.kotlin.fir.analysis.checkers.context.CheckerContext
 import org.jetbrains.kotlin.fir.analysis.checkers.declaration.FirMemberDeclarationChecker
 import org.jetbrains.kotlin.fir.analysis.diagnostics.DiagnosticReporter
@@ -17,13 +15,9 @@ import org.jetbrains.kotlin.fir.declarations.FirMemberDeclaration
 import org.jetbrains.kotlin.fir.declarations.FirProperty
 import org.jetbrains.kotlin.fir.declarations.FirTypeAlias
 import org.jetbrains.kotlin.fir.expressions.*
-import org.jetbrains.kotlin.fir.psi
 import org.jetbrains.kotlin.fir.references.FirNamedReference
 import org.jetbrains.kotlin.fir.symbols.StandardClassIds
-import org.jetbrains.kotlin.fir.types.ConeKotlinType
-import org.jetbrains.kotlin.fir.types.FirTypeRef
-import org.jetbrains.kotlin.fir.types.classId
-import org.jetbrains.kotlin.fir.types.coneType
+import org.jetbrains.kotlin.fir.types.*
 import org.jetbrains.kotlin.name.ClassId
 
 object RedundantExplicitTypeChecker : FirMemberDeclarationChecker() {
@@ -71,10 +65,16 @@ object RedundantExplicitTypeChecker : FirMemberDeclarationChecker() {
                 }
             }
             is FirNamedReference -> {
-                if (typeReference.text != initializer.name.identifier) return
+                if (type is ConeClassLikeType && (type.lookupTag.name != initializer.name || type.typeArguments.isNotEmpty())) {
+                    return
+                }
             }
             is FirFunctionCall -> {
-                if (typeReference.text != initializer.calleeReference.name.asString()) return
+                if (type is ConeClassLikeType &&
+                    (type.lookupTag.name != initializer.calleeReference.name || type.typeArguments.isNotEmpty())
+                ) {
+                    return
+                }
             }
             is FirGetClassCall -> {
                 return
@@ -90,19 +90,6 @@ object RedundantExplicitTypeChecker : FirMemberDeclarationChecker() {
 
         reporter.report(declaration.returnTypeRef.source, FirErrors.REDUNDANT_EXPLICIT_TYPE)
     }
-
-    private val FirTypeRef.text: String?
-        get() {
-            return when (source) {
-                is FirPsiSourceElement<*> -> {
-                    source.psi?.text
-                }
-                is FirLightSourceElement -> {
-                    source?.lighterASTNode?.toString()
-                }
-                else -> null
-            }
-        }
 
     private fun ConeKotlinType.isSame(other: ClassId?): Boolean {
         if (this.nullability.isNullable) return false
