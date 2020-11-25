@@ -21,6 +21,7 @@ import org.jetbrains.kotlin.fir.java.enhancement.readOnlyToMutable
 import org.jetbrains.kotlin.fir.references.builder.buildErrorNamedReference
 import org.jetbrains.kotlin.fir.references.builder.buildResolvedNamedReference
 import org.jetbrains.kotlin.fir.references.impl.FirReferencePlaceholderForResolvedAnnotations
+import org.jetbrains.kotlin.fir.resolve.bindSymbolToLookupTag
 import org.jetbrains.kotlin.fir.resolve.defaultType
 import org.jetbrains.kotlin.fir.resolve.firSymbolProvider
 import org.jetbrains.kotlin.fir.resolve.providers.getClassDeclaredCallableSymbols
@@ -422,12 +423,33 @@ internal fun JavaAnnotation.toFirAnnotationCall(
     session: FirSession, javaTypeParameterStack: JavaTypeParameterStack
 ): FirAnnotationCall {
     return buildAnnotationCall {
+        val classId = classId!!
+        val lookupTag = ConeClassLikeLookupTagImpl(classId)
         annotationTypeRef = buildResolvedTypeRef {
-            type = ConeClassLikeTypeImpl(FirRegularClassSymbol(classId!!).toLookupTag(), emptyArray(), isNullable = false)
+            type = ConeClassLikeTypeImpl(lookupTag, emptyArray(), isNullable = false)
         }
-        argumentList = buildArgumentList {
-            for (argument in this@toFirAnnotationCall.arguments) {
-                arguments += argument.toFirExpression(session, javaTypeParameterStack)
+        if (arguments.any { it.name != null }) {
+            val mapping = linkedMapOf<FirExpression, FirValueParameter>()
+            val annotationClassSymbol = session.firSymbolProvider.getClassLikeSymbolByFqName(classId).also {
+                lookupTag.bindSymbolToLookupTag(session, it)
+            }
+            if (annotationClassSymbol != null) {
+                val annotationConstructor =
+                    (annotationClassSymbol.fir as FirRegularClass).declarations.filterIsInstance<FirConstructor>().first()
+                var index = 0
+                for (argument in this@toFirAnnotationCall.arguments) {
+                    mapping[argument.toFirExpression(session, javaTypeParameterStack)] =
+                        annotationConstructor.valueParameters.find { it.name == argument.name }
+                            ?: annotationConstructor.valueParameters.getOrNull(index++) ?: break
+                }
+                argumentList = buildResolvedArgumentList(mapping)
+            }
+        }
+        if (argumentList is FirEmptyArgumentList) {
+            argumentList = buildArgumentList {
+                for (argument in this@toFirAnnotationCall.arguments) {
+                    arguments += argument.toFirExpression(session, javaTypeParameterStack)
+                }
             }
         }
         calleeReference = FirReferencePlaceholderForResolvedAnnotations
