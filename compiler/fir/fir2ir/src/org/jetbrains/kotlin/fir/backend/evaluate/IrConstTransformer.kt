@@ -56,7 +56,11 @@ class IrConstTransformer(irBuiltIns: IrBuiltIns) : IrElementTransformerVoid() {
     }
 
     override fun visitDeclaration(declaration: IrDeclarationBase): IrStatement {
-        transformAnnotations(declaration)
+        try {
+            transformAnnotations(declaration)
+        } catch (e: Throwable) {
+            throw IllegalStateException("Exception while transforming annotations of declaration ${declaration.render()}", e)
+        }
         return super.visitDeclaration(declaration)
     }
 
@@ -67,16 +71,12 @@ class IrConstTransformer(irBuiltIns: IrBuiltIns) : IrElementTransformerVoid() {
     }
 
     private fun transformAnnotation(annotation: IrConstructorCall) {
-        try {
-            for (i in 0 until annotation.valueArgumentsCount) {
-                val arg = annotation.getValueArgument(i) ?: continue
-                when (arg) {
-                    is IrVararg -> annotation.putValueArgument(i, arg.transformVarArg())
-                    else -> annotation.putValueArgument(i, arg.transformSingleArg(annotation.symbol.owner.valueParameters[i].type))
-                }
+        for (i in 0 until annotation.valueArgumentsCount) {
+            val arg = annotation.getValueArgument(i) ?: continue
+            when (arg) {
+                is IrVararg -> annotation.putValueArgument(i, arg.transformVarArg())
+                else -> annotation.putValueArgument(i, arg.transformSingleArg(annotation.symbol.owner.valueParameters[i].type))
             }
-        } catch (e: Throwable) {
-            throw IllegalStateException("Exception while transforming annotation call ${annotation.render()}", e)
         }
     }
 
