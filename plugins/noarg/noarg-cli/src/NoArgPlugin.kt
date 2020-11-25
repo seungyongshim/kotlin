@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.noarg
 
 import com.intellij.mock.MockProject
 import com.intellij.openapi.project.Project
+import org.jetbrains.kotlin.backend.common.extensions.IrGenerationExtension
 import org.jetbrains.kotlin.codegen.extensions.ExpressionCodegenExtension
 import org.jetbrains.kotlin.compiler.plugin.*
 import org.jetbrains.kotlin.config.CompilerConfiguration
@@ -96,6 +97,7 @@ class NoArgComponentRegistrar : ComponentRegistrar {
         fun registerNoArgComponents(project: Project, annotations: List<String>, invokeInitializers: Boolean) {
             StorageComponentContainerContributor.registerExtension(project, CliNoArgComponentContainerContributor(annotations))
             ExpressionCodegenExtension.registerExtension(project, CliNoArgExpressionCodegenExtension(annotations, invokeInitializers))
+            IrGenerationExtension.registerExtension(project, NoArgIrGenerationExtension(annotations, invokeInitializers))
         }
     }
 }
