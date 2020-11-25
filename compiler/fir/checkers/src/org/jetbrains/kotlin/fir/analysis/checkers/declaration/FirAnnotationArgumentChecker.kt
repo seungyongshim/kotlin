@@ -37,7 +37,10 @@ object FirAnnotationArgumentChecker : FirBasicDeclarationChecker() {
                 val expression = (arg as? FirNamedArgumentExpression)?.expression ?: arg
 
                 checkAnnotationArgumentWithSubElements(expression, context.session, reporter)
-                    ?.let { reporter.report(getFirSourceElement(expression), it) }
+                    ?.let {
+                        val targetExpression = (expression as? FirWrappedArgumentExpression)?.expression ?: expression
+                        reporter.report(getFirSourceElement(targetExpression), it)
+                    }
             }
         }
     }
@@ -82,6 +85,9 @@ object FirAnnotationArgumentChecker : FirBasicDeclarationChecker() {
         expression: FirExpression,
         session: FirSession,
     ): FirDiagnosticFactory0<FirSourceElement, KtExpression>? {
+        if (expression is FirWrappedArgumentExpression) {
+            return checkAnnotationArgument(expression.expression, session)
+        }
         val expressionSymbol = expression.toResolvedCallableSymbol()
             ?.fir
         val classKindOfParent = (expressionSymbol

@@ -427,7 +427,17 @@ internal fun JavaAnnotation.toFirAnnotationCall(
         }
         argumentList = buildArgumentList {
             for (argument in this@toFirAnnotationCall.arguments) {
-                arguments += argument.toFirExpression(session, javaTypeParameterStack)
+                val name = argument.name
+                val expression = argument.toFirExpression(session, javaTypeParameterStack)
+                if (name == null) {
+                    arguments += expression
+                } else {
+                    arguments += buildNamedArgumentExpression {
+                        this.name = name
+                        this.expression = expression
+                        isSpread = false
+                    }
+                }
             }
         }
         calleeReference = FirReferencePlaceholderForResolvedAnnotations
