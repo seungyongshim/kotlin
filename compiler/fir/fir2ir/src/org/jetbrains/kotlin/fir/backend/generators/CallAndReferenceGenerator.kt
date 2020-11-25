@@ -12,6 +12,7 @@ import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.dispatchReceiverClassOrNull
 import org.jetbrains.kotlin.fir.expressions.*
 import org.jetbrains.kotlin.fir.expressions.impl.FirNoReceiverExpression
+import org.jetbrains.kotlin.fir.lazy.Fir2IrLazyConstructor
 import org.jetbrains.kotlin.fir.references.FirDelegateFieldReference
 import org.jetbrains.kotlin.fir.references.FirReference
 import org.jetbrains.kotlin.fir.references.FirResolvedNamedReference
@@ -454,10 +455,20 @@ class CallAndReferenceGenerator(
                                 return applyArgumentsWithReorderingIfNeeded(argumentMapping, valueParameters, annotationMode)
                             }
                         }
+                        val annotationParameters by lazy {
+                            (this.symbol.owner as? Fir2IrLazyConstructor)?.valueParameters
+                        }
                         for ((index, argument) in call.arguments.withIndex()) {
-                            val valueParameter = valueParameters?.get(index)
+                            val (parameterIndex, valueParameter) = if (argument !is FirNamedArgumentExpression) {
+                                IndexedValue(index, valueParameters?.get(index))
+                            } else {
+                                annotationParameters?.withIndex()?.find { (_, parameter) ->
+                                    parameter.name == argument.name
+                                }?.let { (index, _) -> IndexedValue(index, null) }
+                                    ?: IndexedValue(index, valueParameters?.get(index))
+                            }
                             val argumentExpression = convertArgument(argument, valueParameter)
-                            putValueArgument(index, argumentExpression)
+                            putValueArgument(parameterIndex, argumentExpression)
                         }
                     }
                 } else {
