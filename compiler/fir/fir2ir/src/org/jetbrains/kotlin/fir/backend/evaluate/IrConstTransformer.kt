@@ -18,6 +18,7 @@ import org.jetbrains.kotlin.ir.interpreter.IrCompileTimeChecker
 import org.jetbrains.kotlin.ir.interpreter.IrInterpreter
 import org.jetbrains.kotlin.ir.interpreter.toIrConst
 import org.jetbrains.kotlin.ir.types.*
+import org.jetbrains.kotlin.ir.util.render
 import org.jetbrains.kotlin.ir.visitors.IrElementTransformerVoid
 
 fun evaluateConstants(irModuleFragment: IrModuleFragment) {
@@ -103,8 +104,12 @@ class IrConstTransformer(irBuiltIns: IrBuiltIns) : IrElementTransformerVoid() {
     }
 
     private fun IrExpression.convertToConstIfPossible(type: IrType): IrExpression {
-        if (this !is IrConst<*> || type is IrErrorType) return this
-        if (type.isArray()) return this.convertToConstIfPossible((type as IrSimpleType).arguments.single().typeOrNull!!)
-        return this.value.toIrConst(type, this.startOffset, this.endOffset)
+        try {
+            if (this !is IrConst<*> || type is IrErrorType) return this
+            if (type.isArray()) return this.convertToConstIfPossible((type as IrSimpleType).arguments.single().typeOrNull!!)
+            return this.value.toIrConst(type, this.startOffset, this.endOffset)
+        } catch (e: Throwable) {
+            throw IllegalStateException("Exception while converting IrExpression ${render()}", e)
+        }
     }
 }
