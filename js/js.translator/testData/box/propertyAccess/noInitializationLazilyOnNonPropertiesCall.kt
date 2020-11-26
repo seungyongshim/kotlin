@@ -3,8 +3,8 @@
 // PROPERTY_LAZY_INITIALIZATION
 
 // FILE: A.kt
-val a1 = "a".also {
-    2 + 2
+val a1 = "a".let {
+    it + "a"
 }
 
 object A {

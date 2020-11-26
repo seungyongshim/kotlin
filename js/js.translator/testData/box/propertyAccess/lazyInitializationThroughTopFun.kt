@@ -3,8 +3,8 @@
 // PROPERTY_LAZY_INITIALIZATION
 
 // FILE: A.kt
-val a = "a".also {
-    2 + 2
+val a = "a".let {
+    it + "a"
 }
 
 fun foo() =
@@ -13,5 +13,5 @@ fun foo() =
 // FILE: main.kt
 fun box(): String {
     val foo = foo()
-    return if (js("typeof a") == "string" && js("a") == "a") "OK" else "fail"
+    return if (js("typeof a") == "string" && js("a") == "aa") "OK" else "fail"
 }
