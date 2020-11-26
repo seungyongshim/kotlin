@@ -8,6 +8,7 @@ package org.jetbrains.kotlin
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.regex.Pattern
+import java.io.File
 
 private const val MODULE_DELIMITER = ",\\s*"
 // This pattern is a copy from the kotlin/compiler/tests-common/tests/org/jetbrains/kotlin/test/TestFiles.java
