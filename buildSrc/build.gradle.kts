@@ -125,10 +125,14 @@ tasks.validatePlugins.configure {
     enabled = false
 }
 
+java {
+    disableAutoTargetJvm()
+}
+
 dependencies {
     implementation(kotlin("stdlib", embeddedKotlinVersion))
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:${project.bootstrapKotlinVersion}")
-    compile("org.jetbrains.kotlin:kotlin-build-gradle-plugin:0.0.20")
+    implementation("org.jetbrains.kotlin:kotlin-build-gradle-plugin:0.0.22")
     implementation("com.gradle.publish:plugin-publish-plugin:0.12.0")
 
     implementation("net.rubygrapefruit:native-platform:${property("versions.native-platform")}")
