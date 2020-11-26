@@ -19,10 +19,13 @@ fun box(): String {
     if (varArgs.size != 4 || js("typeof varArgs[0] !== 'number'") || js("typeof varArgs[1] !== 'string'")) return "fail2: $varArgs arguments"
 
     val namedParameter = create(3, args = arrayOf("p0", "p1"))
-    if (namedParameter.size != 3 || js("typeof varArgs[0] !== 'number'") || js("typeof namedParameter[1] !== 'string'")) return "fail3: $namedParameter arguments"
+    if (namedParameter.size != 3 || js("typeof namedParameter[0] !== 'number'") || js("typeof namedParameter[1] !== 'string'")) return "fail3: $namedParameter arguments"
 
     val spreadArgs = create(4, *arrayOf("p0", "p1"))
-    if (spreadArgs.size != 3 || js("typeof varArgs[0] !== 'number'") || js("typeof spreadArgs[1] !== 'string'")) return "fail4: $spreadArgs arguments"
+    if (spreadArgs.size != 3 || js("typeof spreadArgs[0] !== 'number'") || js("typeof spreadArgs[1] !== 'string'")) return "fail4: $spreadArgs arguments"
+
+    val spreadNamedArgs = create(5, args = *arrayOf("p0", "p1"))
+    if (spreadNamedArgs.size != 3 || js("typeof spreadNamedArgs[0] !== 'number'") || js("typeof spreadNamedArgs[1] !== 'string'")) return "fail4: $spreadNamedArgs arguments"
 
     return "OK"
 }

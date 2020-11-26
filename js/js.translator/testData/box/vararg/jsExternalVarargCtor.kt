@@ -29,6 +29,10 @@ fun box(): String {
     if (ctorCallArgs.size != 3 || js("typeof ctorCallArgs[0] !== 'number'") || js("typeof ctorCallArgs[1] !== 'string'"))
         return "fail4: $ctorCallArgs arguments"
 
+    FieldPath(5, args = *arrayOf("p0", "p1"))
+    if (ctorCallArgs.size != 3 || js("typeof ctorCallArgs[0] !== 'number'") || js("typeof ctorCallArgs[1] !== 'string'"))
+        return "fail5: $ctorCallArgs arguments"
+
     return "OK"
 }
 
