@@ -16,11 +16,13 @@
 
 package org.jetbrains.kotlin.noarg.diagnostic
 
+import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.extensions.AnnotationBasedExtension
 import org.jetbrains.kotlin.psi.KtClass
 import org.jetbrains.kotlin.psi.KtDeclaration
 import org.jetbrains.kotlin.psi.KtModifierListOwner
+import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.checkers.DeclarationChecker
 import org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext
 import org.jetbrains.kotlin.resolve.descriptorUtil.getSuperClassOrAny
@@ -31,17 +33,25 @@ class CliNoArgDeclarationChecker(private val noArgAnnotationFqNames: List<String
 
 abstract class AbstractNoArgDeclarationChecker : DeclarationChecker, AnnotationBasedExtension {
     override fun check(declaration: KtDeclaration, descriptor: DeclarationDescriptor, context: DeclarationCheckerContext) {
-        // Handle only classes
         if (descriptor !is ClassDescriptor || declaration !is KtClass) return
         if (descriptor.kind != ClassKind.CLASS) return
         if (!descriptor.hasSpecialAnnotation(declaration)) return
 
+        if (descriptor.isInner) {
+            context.trace.report(ErrorsNoArg.NOARG_ON_INNER_CLASS.on(declaration.reportTarget))
+        } else if (DescriptorUtils.isLocal(descriptor)) {
+            context.trace.report(ErrorsNoArg.NOARG_ON_LOCAL_CLASS.on(declaration.reportTarget))
+        }
+
         val superClass = descriptor.getSuperClassOrAny()
         if (superClass.constructors.none { it.isNoArgConstructor() } && !superClass.hasSpecialAnnotation(declaration)) {
-            val reportTarget = declaration.nameIdentifier ?: declaration.getClassOrInterfaceKeyword() ?: declaration
-            context.trace.report(ErrorsNoArg.NO_NOARG_CONSTRUCTOR_IN_SUPERCLASS.on(reportTarget))
+            context.trace.report(ErrorsNoArg.NO_NOARG_CONSTRUCTOR_IN_SUPERCLASS.on(declaration.reportTarget))
         }
     }
 
-    private fun ConstructorDescriptor.isNoArgConstructor() = valueParameters.all(ValueParameterDescriptor::declaresDefaultValue)
+    private val KtClass.reportTarget: PsiElement
+        get() = nameIdentifier ?: getClassOrInterfaceKeyword() ?: this
+
+    private fun ConstructorDescriptor.isNoArgConstructor(): Boolean =
+        valueParameters.all(ValueParameterDescriptor::declaresDefaultValue)
 }

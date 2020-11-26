@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.noarg
 
+import org.jetbrains.kotlin.checkers.AbstractDiagnosticsTest
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.codegen.AbstractBlackBoxCodegenTest
 import org.jetbrains.kotlin.codegen.AbstractBytecodeListingTest
@@ -24,6 +25,12 @@ abstract class AbstractBlackBoxCodegenTestForNoArg : AbstractBlackBoxCodegenTest
 }
 
 abstract class AbstractBytecodeListingTestForNoArg : AbstractBytecodeListingTest() {
+    override fun setupEnvironment(environment: KotlinCoreEnvironment) {
+        NoArgComponentRegistrar.registerNoArgComponents(environment.project, NOARG_ANNOTATIONS, false)
+    }
+}
+
+abstract class AbstractDiagnosticsTestForNoArg : AbstractDiagnosticsTest() {
     override fun setupEnvironment(environment: KotlinCoreEnvironment) {
         NoArgComponentRegistrar.registerNoArgComponents(environment.project, NOARG_ANNOTATIONS, false)
     }
