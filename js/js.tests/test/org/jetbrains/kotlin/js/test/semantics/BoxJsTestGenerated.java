@@ -6841,11 +6841,6 @@ public class BoxJsTestGenerated extends AbstractBoxJsTest {
             runTest("js/js.translator/testData/box/propertyAccess/lazyInitializationSplitPerModule.kt");
         }
 
-        @TestMetadata("noInitializationLazilyOnNonPropertiesCall.kt")
-        public void testNoInitializationLazilyOnNonPropertiesCall() throws Exception {
-            runTest("js/js.translator/testData/box/propertyAccess/noInitializationLazilyOnNonPropertiesCall.kt");
-        }
-
         @TestMetadata("overloadedOverriddenFunctionPropertyName.kt")
         public void testOverloadedOverriddenFunctionPropertyName() throws Exception {
             runTest("js/js.translator/testData/box/propertyAccess/overloadedOverriddenFunctionPropertyName.kt");

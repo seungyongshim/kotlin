@@ -6811,6 +6811,11 @@ public class IrBoxJsTestGenerated extends AbstractIrBoxJsTest {
             runTest("js/js.translator/testData/box/propertyAccess/lazyInitializationSplitPerModule.kt");
         }
 
+        @TestMetadata("lazyInitializationThroughTopFun.kt")
+        public void testLazyInitializationThroughTopFun() throws Exception {
+            runTest("js/js.translator/testData/box/propertyAccess/lazyInitializationThroughTopFun.kt");
+        }
+
         @TestMetadata("noInitializationLazilyOnNonPropertiesCall.kt")
         public void testNoInitializationLazilyOnNonPropertiesCall() throws Exception {
             runTest("js/js.translator/testData/box/propertyAccess/noInitializationLazilyOnNonPropertiesCall.kt");
