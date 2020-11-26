@@ -53,6 +53,7 @@ import org.jetbrains.kotlin.serialization.js.JsSerializerProtocol
 import org.jetbrains.kotlin.serialization.js.KotlinJavascriptSerializationUtil
 import org.jetbrains.kotlin.serialization.js.ModuleKind
 import org.jetbrains.kotlin.test.*
+import org.jetbrains.kotlin.test.KotlinTestWithEnvironment.fail
 import org.jetbrains.kotlin.utils.DFS
 import org.jetbrains.kotlin.utils.JsMetadataVersion
 import org.jetbrains.kotlin.utils.KotlinJavascriptMetadata
@@ -63,6 +64,7 @@ import java.io.File
 import java.io.PrintStream
 import java.lang.Boolean.getBoolean
 import java.nio.charset.Charset
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 abstract class BasicBoxTest(
@@ -85,6 +87,7 @@ abstract class BasicBoxTest(
 
     protected open val runMinifierByDefault: Boolean = false
     protected open val skipMinification = getBoolean("kotlin.js.skipMinificationTest")
+    protected open val reachableNodesOverwrite = getBoolean("kotlin.js.reachableNodesOverwrite")
 
     protected open val skipRegularMode: Boolean = false
     protected open val runIrDce: Boolean = false
@@ -297,27 +300,12 @@ abstract class BasicBoxTest(
                 (runMinifierByDefault || expectedReachableNodesFound) &&
                 !SKIP_MINIFICATION.matcher(fileContent).find()
             ) {
-                val thresholdChecker: (Int) -> Unit = { reachableNodesCount ->
-                    val replacement = "// $EXPECTED_REACHABLE_NODES_DIRECTIVE: $reachableNodesCount"
-                    if (!expectedReachableNodesFound) {
-                        file.writeText("$replacement\n$fileContent")
-                        fail("The number of expected reachable nodes was not set. Actual reachable nodes: $reachableNodesCount")
-                    }
-                    else {
-                        val expectedReachableNodes = expectedReachableNodesMatcher.group(1).toInt()
-                        val minThreshold = expectedReachableNodes * 9 / 10
-                        val maxThreshold = expectedReachableNodes * 11 / 10
-                        if (reachableNodesCount < minThreshold || reachableNodesCount > maxThreshold) {
-
-                            val newText = fileContent.substring(0, expectedReachableNodesMatcher.start()) +
-                                          replacement +
-                                          fileContent.substring(expectedReachableNodesMatcher.end())
-                            file.writeText(newText)
-                            fail("Number of reachable nodes ($reachableNodesCount) does not fit into expected range " +
-                                 "[$minThreshold; $maxThreshold]")
-                        }
-                    }
-                }
+                val thresholdChecker: (Int) -> Unit = reachableNodesThresholdChecker(
+                    expectedReachableNodesFound,
+                    expectedReachableNodesMatcher,
+                    fileContent,
+                    file
+                )
 
                 val outputDirForMinification = getOutputDir(file, testGroupOutputDirForMinification)
 
@@ -333,6 +321,44 @@ abstract class BasicBoxTest(
                         withModuleSystem = withModuleSystem,
                         minificationThresholdChecker =  thresholdChecker)
                 }
+            }
+        }
+    }
+
+    private fun reachableNodesThresholdChecker(
+        expectedReachableNodesFound: Boolean,
+        expectedReachableNodesMatcher: Matcher,
+        fileContent: String,
+        file: File
+    ) = { reachableNodesCount: Int ->
+        val replacement = "// $EXPECTED_REACHABLE_NODES_DIRECTIVE: $reachableNodesCount"
+        if (expectedReachableNodesFound) {
+            val expectedReachableNodes = expectedReachableNodesMatcher.group(1).toInt()
+            val minThreshold = expectedReachableNodes * 9 / 10
+            val maxThreshold = expectedReachableNodes * 11 / 10
+            if (reachableNodesCount < minThreshold || reachableNodesCount > maxThreshold) {
+
+                val message = "Number of reachable nodes ($reachableNodesCount) does not fit into expected range " +
+                        "[$minThreshold; $maxThreshold]"
+                if (reachableNodesOverwrite) {
+                    val newText = fileContent.substring(0, expectedReachableNodesMatcher.start()) +
+                            replacement +
+                            fileContent.substring(expectedReachableNodesMatcher.end())
+                    file.writeText(newText)
+                } else {
+                    println(message)
+                }
+
+                fail(message)
+            }
+        } else {
+            val message = "The number of expected reachable nodes was not set. Actual reachable nodes: $reachableNodesCount"
+
+            if (reachableNodesOverwrite) {
+                file.writeText("$replacement\n$fileContent")
+                fail(message)
+            } else {
+                println(message)
             }
         }
     }
