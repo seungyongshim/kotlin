@@ -11140,6 +11140,11 @@ public class IrCodegenBoxWasmTestGenerated extends AbstractIrCodegenBoxWasmTest 
             runTest("compiler/testData/codegen/box/properties/kt9603.kt");
         }
 
+        @TestMetadata("lazyInitializationPure.kt")
+        public void testLazyInitializationPure() throws Exception {
+            runTest("compiler/testData/codegen/box/properties/lazyInitializationPure.kt");
+        }
+
         @TestMetadata("primitiveOverrideDefaultAccessor.kt")
         public void testPrimitiveOverrideDefaultAccessor() throws Exception {
             runTest("compiler/testData/codegen/box/properties/primitiveOverrideDefaultAccessor.kt");

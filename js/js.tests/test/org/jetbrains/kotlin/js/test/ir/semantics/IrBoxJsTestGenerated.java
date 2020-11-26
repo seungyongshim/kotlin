@@ -6791,6 +6791,11 @@ public class IrBoxJsTestGenerated extends AbstractIrBoxJsTest {
             runTest("js/js.translator/testData/box/propertyAccess/lazyInitialization.kt");
         }
 
+        @TestMetadata("lazyInitializationCyclicImports.kt")
+        public void testLazyInitializationCyclicImports() throws Exception {
+            runTest("js/js.translator/testData/box/propertyAccess/lazyInitializationCyclicImports.kt");
+        }
+
         @TestMetadata("lazyInitializationOrder.kt")
         public void testLazyInitializationOrder() throws Exception {
             runTest("js/js.translator/testData/box/propertyAccess/lazyInitializationOrder.kt");
