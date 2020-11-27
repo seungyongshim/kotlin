@@ -23174,6 +23174,11 @@ public class LightAnalysisModeTestGenerated extends AbstractLightAnalysisModeTes
             runTest("compiler/testData/codegen/box/properties/lazyInitialization.kt");
         }
 
+        @TestMetadata("lazyInitializationCyclicImports.kt")
+        public void testLazyInitializationCyclicImports() throws Exception {
+            runTest("compiler/testData/codegen/box/properties/lazyInitializationCyclicImports.kt");
+        }
+
         @TestMetadata("lazyInitializationMultiModule.kt")
         public void testLazyInitializationMultiModule() throws Exception {
             runTest("compiler/testData/codegen/box/properties/lazyInitializationMultiModule.kt");
@@ -23182,11 +23187,6 @@ public class LightAnalysisModeTestGenerated extends AbstractLightAnalysisModeTes
         @TestMetadata("lazyInitializationOrder.kt")
         public void testLazyInitializationOrder() throws Exception {
             runTest("compiler/testData/codegen/box/properties/lazyInitializationOrder.kt");
-        }
-
-        @TestMetadata("lazyInitializationPure.kt")
-        public void testLazyInitializationPure() throws Exception {
-            runTest("compiler/testData/codegen/box/properties/lazyInitializationPure.kt");
         }
 
         @TestMetadata("lazyInitializationSplitPerModule.kt")
